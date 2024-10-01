@@ -1,9 +1,11 @@
 package com.hk88.simplemusicplayer
 
+import android.app.Service
 import android.content.ComponentName
 import android.content.Context
 import android.content.ServiceConnection
 import android.os.Bundle
+import android.os.IBinder
 import android.view.View
 import android.widget.Button
 import androidx.activity.enableEdgeToEdge
@@ -16,6 +18,19 @@ class MainActivity : AppCompatActivity() , View.OnClickListener{
     lateinit var btn_play : Button
     lateinit var btn_pause : Button
     lateinit var btn_stop : Button
+    var mService: MusicPlayerService? = null
+
+    val mServiceConnection = object : ServiceConnection {
+        override fun onServiceDisconnected(name: ComponentName?, Service: IBinder) {
+            mService = (service as MusicPlayerService.MusicPlayerBinder).getService()
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            mService = null
+        }
+
+    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,8 +53,41 @@ class MainActivity : AppCompatActivity() , View.OnClickListener{
 
     override fun onClick(v: View?) {
         when(v?.id) {
-
+            R.id.btn_play -> {
+                play()
+            }
+            R.id.btn_pause -> {
+                pause()
+            }
+            R.id.btn_stop -> {
+                stop()
+            }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        if(mService == null) {
+            
+        }
+
+    }
+
+    override fun onPause() {
+        super.onPause()
+    }
+
+    private fun play() {
+
+    }
+
+    private fun pause() {
+
+    }
+
+    private fun stop() {
+
     }
 
 }
