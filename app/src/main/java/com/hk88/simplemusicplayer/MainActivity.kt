@@ -3,15 +3,15 @@ package com.hk88.simplemusicplayer
 import android.app.Service
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
 import android.os.IBinder
 import android.view.View
 import android.widget.Button
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+
 
 class MainActivity : AppCompatActivity() , View.OnClickListener{
 
@@ -21,8 +21,9 @@ class MainActivity : AppCompatActivity() , View.OnClickListener{
     var mService: MusicPlayerService? = null
 
     val mServiceConnection = object : ServiceConnection {
-        override fun onServiceDisconnected(name: ComponentName?, Service: IBinder) {
-            mService = (service as MusicPlayerService.MusicPlayerBinder).getService()
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            mService = (service as MusicPlayerService.MusicPlayerBinder).
+            getService()
         }
 
         override fun onServiceDisconnected(name: ComponentName?) {
@@ -30,7 +31,6 @@ class MainActivity : AppCompatActivity() , View.OnClickListener{
         }
 
     }
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -69,25 +69,41 @@ class MainActivity : AppCompatActivity() , View.OnClickListener{
         super.onResume()
 
         if(mService == null) {
-            
+            if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                startForegroundService(Intent(this,
+                    MusicPlayerService::class.java))
+            } else {
+                startService(Intent(applicationContext,
+                    MusicPlayerService::class.java))
+            }
+
+            val intent = Intent(this, MusicPlayerService::class.java)
+            bindService(intent, mServiceConnection, Context.BIND_AUTO_CREATE)
         }
 
     }
 
     override fun onPause() {
         super.onPause()
+        if(mService != null) {
+            if(!mService!!.isPlaying()) {
+                mService!!.stopSelf()
+            }
+            unbindService(mServiceConnection)
+            mService = null
+        }
     }
 
     private fun play() {
-
+        mService?.play()
     }
 
     private fun pause() {
-
+        mService?.pause()
     }
 
     private fun stop() {
-
+        mService?.stop()
     }
 
 }
